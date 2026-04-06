@@ -243,32 +243,29 @@
                     <div id="form-container" class="bg-white p-8 lg:p-12 rounded-3xl shadow-2xl border border-slate-100">
                         <h3 class="text-2xl font-bold mb-8">Formulário de Inscrição</h3>
                         
-                        <!-- Iframe Oculto para submissão estável -->
-                        <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(window.submitted) { handleSuccessUI(); }"></iframe>
-                        
                         <form id="registrationForm" class="space-y-6">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Nome Completo</label>
-                                    <input type="text" id="name" required placeholder="Ex: João da Silva" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="name" name="name" required placeholder="Ex: João da Silva" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">WhatsApp</label>
-                                    <input type="tel" id="whatsapp" required placeholder="(63) 99999-9999" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="(63) 99999-9999" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-bold text-slate-700">E-mail Institucional</label>
-                                <input type="email" id="email" required placeholder="seuemail@exemplo.com" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                             </div>
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Órgão / Secretaria</label>
-                                    <input type="text" id="organ" required placeholder="Ex: Casa Militar" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="organ" name="organ" required placeholder="Ex: Casa Militar" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Cargo / Função</label>
-                                    <input type="text" id="role" required placeholder="Ex: Analista, Coronel..." class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="role" name="role" required placeholder="Ex: Analista, Coronel..." class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                             </div>
                             <button type="submit" id="submitBtn" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-800 transition flex justify-center items-center shadow-lg shadow-blue-100">
@@ -337,10 +334,7 @@
             authReady = !!user;
         });
 
-        /**
-         * Função para atualizar a UI após sucesso (chamada pelo iframe)
-         */
-        window.handleSuccessUI = () => {
+        const handleSuccessUI = () => {
             const formContainer = document.getElementById('form-container');
             formContainer.innerHTML = `
                 <div class="text-center py-12">
@@ -360,7 +354,7 @@
             event.preventDefault();
             
             if (!authReady || !currentUser) {
-                alert("Conectando ao sistema seguro...");
+                alert("Conectando ao sistema seguro. Tente novamente em 2 segundos.");
                 return;
             }
 
@@ -379,41 +373,31 @@
             const role = document.getElementById('role').value.trim();
 
             /**
-             * SUBMISSÃO VIA FORMULÁRIO OCULTO (MAIS ESTÁVEL PARA GOOGLE FORMS)
+             * SUBMISSÃO PARA GOOGLE FORMS (VIA FETCH NO-CORS)
+             * Esta é a forma mais moderna e limpa de enviar dados sem recarregar a página.
              */
             const formURL = `https://docs.google.com/forms/d/e/${googleFormID}/formResponse`;
             
-            const gForm = document.createElement('form');
-            gForm.action = formURL;
-            gForm.method = 'POST';
-            gForm.target = 'hidden_iframe';
-            gForm.style.display = 'none';
+            const params = new URLSearchParams();
+            params.append('entry.1125382548', name);
+            params.append('entry.244908671', whatsapp);
+            params.append('entry.368790757', email);
+            params.append('entry.1952617526', organ);
+            params.append('entry.1880183315', role);
 
-            // Mapeamento exato dos IDs das perguntas
-            const fields = {
-                'entry.1125382548': name,
-                'entry.244908671': whatsapp,
-                'entry.368790757': email,
-                'entry.1952617526': organ,
-                'entry.1880183315': role
-            };
-
-            for (const key in fields) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = fields[key];
-                gForm.appendChild(input);
-            }
-
-            document.body.appendChild(gForm);
-            
             try {
-                // Marcar como submetido para o gatilho do iframe
-                window.submitted = true;
-                gForm.submit();
+                // Envio para o Google Forms
+                // O mode 'no-cors' permite o envio mas o browser não consegue ler a resposta de sucesso do Google (o que é normal)
+                fetch(formURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                }).catch(err => console.log("Google Forms submit initiated..."));
 
-                // Envio para Firebase (Backup)
+                // Envio para Firebase (Backup e Gestão Interna)
                 const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
                 await addDoc(collectionPath, {
                     name, whatsapp, email, organ, role,
@@ -421,20 +405,15 @@
                     userId: currentUser.uid
                 });
                 
-                // O sucesso visual será disparado pelo onload do iframe
-                // Mas garantimos aqui também se o Firebase for muito rápido
-                setTimeout(() => {
-                    if (document.getElementById('registrationForm')) {
-                        handleSuccessUI();
-                    }
-                }, 2000);
+                // Sucesso visual imediato
+                handleSuccessUI();
 
             } catch (error) {
                 console.error("Erro sincronização:", error);
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
-                alert("Erro ao processar inscrição. Verifique sua conexão.");
+                alert("Erro ao processar inscrição. Verifique sua ligação à internet.");
             }
         };
 
