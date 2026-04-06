@@ -28,7 +28,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Garante que o scroll considere a altura do header fixo */
         html {
             scroll-padding-top: 5rem;
         }
@@ -123,7 +122,7 @@
         </div>
     </section>
 
-    <!-- Benefícios Section (Reposicionada para melhor fluxo) -->
+    <!-- Benefícios Section -->
     <section id="beneficios" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <h2 class="text-3xl font-bold text-slate-900 mb-4">O que você vai dominar no evento</h2>
@@ -309,36 +308,50 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Variáveis de ambiente injetadas
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'palestra-gestao-to';
         
+        // Inicialização dos serviços
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         let currentUser = null;
+        let authReady = false;
 
-        const initAuth = async () => {
+        /**
+         * Fluxo de Autenticação Robusto (Regra 3)
+         */
+        const startAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
+                console.log("Autenticação vinculada com sucesso.");
             } catch (error) {
-                console.error("Erro na autenticação:", error);
+                console.error("Falha crítica na autenticação:", error);
             }
         };
 
+        // Observador de estado de autenticação
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
+            authReady = !!user;
         });
 
-        window.handleRegistration = async (event) => {
+        /**
+         * Lógica de Envio do Formulário (Regra 1 e 3)
+         */
+        const handleRegistration = async (event) => {
             event.preventDefault();
             
-            if (!currentUser) {
-                alert("Erro de conexão. Por favor, recarregue a página.");
+            // Verificação de segurança antes de processar
+            if (!authReady || !currentUser) {
+                console.error("Tentativa de envio sem autenticação pronta.");
+                alert("O sistema ainda está carregando a conexão segura. Por favor, aguarde 3 segundos e tente novamente.");
                 return;
             }
 
@@ -346,48 +359,64 @@
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
 
+            // Feedback Visual: Bloquear botão
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
 
             const regData = {
-                name: document.getElementById('name').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                email: document.getElementById('email').value,
-                organ: document.getElementById('organ').value,
-                role: document.getElementById('role').value,
-                createdAt: serverTimestamp()
+                name: document.getElementById('name').value.trim(),
+                whatsapp: document.getElementById('whatsapp').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                organ: document.getElementById('organ').value.trim(),
+                role: document.getElementById('role').value.trim(),
+                createdAt: serverTimestamp(),
+                userId: currentUser.uid // Identificador do autor
             };
 
             try {
-                const docPath = ['artifacts', appId, 'public', 'data', 'registrations'];
-                const docRef = collection(db, ...docPath);
-                await addDoc(docRef, regData);
+                // Caminho estrito (Regra 1)
+                const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
                 
+                // Gravação no Firestore
+                const docRef = await addDoc(collectionPath, regData);
+                console.log("Inscrição salva com ID:", docRef.id);
+                
+                // Sucesso na interface
                 const formContainer = document.getElementById('form-container');
                 formContainer.innerHTML = `
                     <div class="text-center py-12">
                         <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
                             <i class="fa-solid fa-check"></i>
                         </div>
-                        <h3 class="text-3xl font-bold text-slate-900 mb-4">Inscrição Confirmada!</h3>
-                        <p class="text-slate-600 mb-8">Seus dados foram salvos com sucesso. Aguardamos você no Palácio Araguaia no dia 07/04.</p>
-                        <button onclick="window.location.reload()" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100">
+                        <h3 class="text-3xl font-bold text-slate-900 mb-4">Inscrição Realizada!</h3>
+                        <p class="text-slate-600 mb-8">Seus dados foram enviados e salvos com sucesso na base da Casa Militar.</p>
+                        <button onclick="window.location.reload()" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-800 transition">
                             Voltar
                         </button>
                     </div>
                 `;
             } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert("Erro ao salvar inscrição. Verifique sua conexão.");
+                console.error("Erro ao gravar dados na planilha (Firestore):", error);
+                
+                // Reverter estado do botão em caso de erro
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
+
+                if (error.code === 'permission-denied') {
+                    alert("Erro de permissão: A conexão com o banco de dados não foi autorizada. Verifique sua rede.");
+                } else {
+                    alert("Ocorreu um erro ao salvar sua inscrição. Por favor, tente novamente em instantes.");
+                }
             }
         };
 
-        initAuth();
-        document.getElementById('registrationForm').addEventListener('submit', window.handleRegistration);
+        // Iniciar processo de autenticação imediatamente
+        startAuth();
+
+        // Vincular evento de envio
+        document.getElementById('registrationForm').addEventListener('submit', handleRegistration);
     </script>
 </body>
 </html>
