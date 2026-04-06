@@ -238,13 +238,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start space-x-4">
-                        <i class="fa-solid fa-certificate text-blue-600 text-2xl mt-1"></i>
-                        <div>
-                            <h4 class="font-bold text-blue-900">Certificação Incluída</h4>
-                            <p class="text-sm text-blue-700 leading-relaxed mt-1">Certificado oficial de participação emitido pelo Instituto Saber Digital para enriquecimento curricular.</p>
-                        </div>
-                    </div>
                 </div>
                 <div class="lg:col-span-7">
                     <div id="form-container" class="bg-white p-8 lg:p-12 rounded-3xl shadow-2xl border border-slate-100">
@@ -302,17 +295,20 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK & Google Forms Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Variáveis de ambiente injetadas
+        // Configurações
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'palestra-gestao-to';
         
-        // Inicialização dos serviços
+        // ID Extraído do seu link do Google Form
+        const googleFormID = "1FAIpQLSeh_g_eASe0_neoTozKP0nW3FT2VTixBrLG8t1rVbtAoxUsHg"; 
+        
+        // Inicialização
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -320,9 +316,6 @@
         let currentUser = null;
         let authReady = false;
 
-        /**
-         * Fluxo de Autenticação Robusto (Regra 3)
-         */
         const startAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -330,28 +323,21 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-                console.log("Autenticação vinculada com sucesso.");
             } catch (error) {
-                console.error("Falha crítica na autenticação:", error);
+                console.error("Erro auth:", error);
             }
         };
 
-        // Observador de estado de autenticação
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             authReady = !!user;
         });
 
-        /**
-         * Lógica de Envio do Formulário (Regra 1 e 3)
-         */
         const handleRegistration = async (event) => {
             event.preventDefault();
             
-            // Verificação de segurança antes de processar
             if (!authReady || !currentUser) {
-                console.error("Tentativa de envio sem autenticação pronta.");
-                alert("O sistema ainda está carregando a conexão segura. Por favor, aguarde 3 segundos e tente novamente.");
+                alert("Conectando ao sistema...");
                 return;
             }
 
@@ -359,63 +345,70 @@
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
 
-            // Feedback Visual: Bloquear botão
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
 
-            const regData = {
-                name: document.getElementById('name').value.trim(),
-                whatsapp: document.getElementById('whatsapp').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                organ: document.getElementById('organ').value.trim(),
-                role: document.getElementById('role').value.trim(),
-                createdAt: serverTimestamp(),
-                userId: currentUser.uid // Identificador do autor
-            };
+            const name = document.getElementById('name').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const organ = document.getElementById('organ').value.trim();
+            const role = document.getElementById('role').value.trim();
+
+            /**
+             * INTEGRAÇÃO GOOGLE FORMS
+             */
+            const formURL = `https://docs.google.com/forms/d/e/${googleFormID}/formResponse`;
+            
+            // Criando os parâmetros da URL para o POST
+            const params = new URLSearchParams();
+            params.append('entry.1125382548', name);
+            params.append('entry.244908671', whatsapp);
+            params.append('entry.368790757', email);
+            params.append('entry.1952617526', organ);
+            params.append('entry.1880183315', role);
 
             try {
-                // Caminho estrito (Regra 1)
+                // Envio para o Google Forms (modo 'no-cors' é necessário para Cross-Origin sem erro)
+                fetch(formURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+
+                // Envio para Firebase (Backup)
                 const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+                await addDoc(collectionPath, {
+                    name, whatsapp, email, organ, role,
+                    createdAt: serverTimestamp(),
+                    userId: currentUser.uid
+                });
                 
-                // Gravação no Firestore
-                const docRef = await addDoc(collectionPath, regData);
-                console.log("Inscrição salva com ID:", docRef.id);
-                
-                // Sucesso na interface
+                // Feedback de Sucesso
                 const formContainer = document.getElementById('form-container');
                 formContainer.innerHTML = `
                     <div class="text-center py-12">
                         <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
                             <i class="fa-solid fa-check"></i>
                         </div>
-                        <h3 class="text-3xl font-bold text-slate-900 mb-4">Inscrição Realizada!</h3>
-                        <p class="text-slate-600 mb-8">Seus dados foram enviados e salvos com sucesso na base da Casa Militar.</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mb-4">Inscrição Confirmada!</h3>
+                        <p class="text-slate-600 mb-8">Seus dados foram integrados à planilha oficial da Casa Militar com sucesso.</p>
                         <button onclick="window.location.reload()" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-800 transition">
-                            Voltar
+                            Finalizar
                         </button>
                     </div>
                 `;
             } catch (error) {
-                console.error("Erro ao gravar dados na planilha (Firestore):", error);
-                
-                // Reverter estado do botão em caso de erro
+                console.error("Erro sincronização:", error);
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
-
-                if (error.code === 'permission-denied') {
-                    alert("Erro de permissão: A conexão com o banco de dados não foi autorizada. Verifique sua rede.");
-                } else {
-                    alert("Ocorreu um erro ao salvar sua inscrição. Por favor, tente novamente em instantes.");
-                }
+                alert("Erro ao processar. Verifique sua conexão.");
             }
         };
 
-        // Iniciar processo de autenticação imediatamente
         startAuth();
-
-        // Vincular evento de envio
         document.getElementById('registrationForm').addEventListener('submit', handleRegistration);
     </script>
 </body>
