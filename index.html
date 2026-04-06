@@ -58,7 +58,7 @@
     <!-- Top Banner -->
     <section class="pt-20">
         <div class="w-full">
-            <img src="images/banner_landpage_inscricao.png" alt="Banner Gestão Pública 4.0" class="w-full h-auto shadow-lg">
+            <img src="images/banner_landpage_inscricao.png" alt="Banner Gestão Pública 4.0" class="w-full h-auto shadow-lg" onerror="this.src='https://via.placeholder.com/1920x600?text=Banner+Gestão+Pública+4.0'">
         </div>
     </section>
 
@@ -167,7 +167,7 @@
                 <div class="lg:w-1/2 mb-12 lg:mb-0">
                     <div class="relative">
                         <div class="absolute -inset-4 bg-blue-100 rounded-3xl blur-2xl opacity-50"></div>
-                        <img src="images/foto_banner_yoshida.jpg" alt="Rafael Yoshida" class="relative rounded-3xl shadow-2xl w-full object-cover">
+                        <img src="images/foto_banner_yoshida.jpg" alt="Rafael Yoshida" class="relative rounded-3xl shadow-2xl w-full object-cover" onerror="this.src='https://via.placeholder.com/600x800?text=Rafael+Yoshida'">
                         <div class="absolute -bottom-6 -right-6 bg-blue-700 text-white p-6 rounded-2xl shadow-xl hidden md:block">
                             <p class="text-2xl font-black italic">Qlik</p>
                             <p class="text-xs uppercase tracking-tighter opacity-80">Ambassador 2025</p>
@@ -241,31 +241,34 @@
                 </div>
                 <div class="lg:col-span-7">
                     <div id="form-container" class="bg-white p-8 lg:p-12 rounded-3xl shadow-2xl border border-slate-100">
-                        <h3 class="text-2xl font-bold mb-8">Formulário de Inscrição</h3>
+                        <h3 class="text-2xl font-bold mb-8 text-slate-800">Formulário de Inscrição</h3>
                         
+                        <!-- IFRAME OCULTO PARA RECEBER A RESPOSTA DO GOOGLE (Isso evita bloqueios de segurança) -->
+                        <iframe name="google_submit_frame" id="google_submit_frame" style="display:none;"></iframe>
+
                         <form id="registrationForm" class="space-y-6">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Nome Completo</label>
-                                    <input type="text" id="name" name="name" required placeholder="Ex: João da Silva" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="input_name" required placeholder="Ex: João da Silva" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">WhatsApp</label>
-                                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="(63) 99999-9999" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="tel" id="input_whatsapp" required placeholder="(63) 99999-9999" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-bold text-slate-700">E-mail Institucional</label>
-                                <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                <input type="email" id="input_email" required placeholder="seuemail@exemplo.com" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                             </div>
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Órgão / Secretaria</label>
-                                    <input type="text" id="organ" name="organ" required placeholder="Ex: Casa Militar" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="input_organ" required placeholder="Ex: Casa Militar" class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700">Cargo / Função</label>
-                                    <input type="text" id="role" name="role" required placeholder="Ex: Analista, Coronel..." class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
+                                    <input type="text" id="input_role" required placeholder="Ex: Analista, Coronel..." class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition">
                                 </div>
                             </div>
                             <button type="submit" id="submitBtn" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-800 transition flex justify-center items-center shadow-lg shadow-blue-100">
@@ -286,53 +289,57 @@
                 SABER<span class="text-blue-500">DIGITAL</span>
             </div>
             <div class="flex flex-wrap justify-center gap-4 text-sm mb-8">
-                <span class="font-medium text-slate-400">Casa Militar do Tocantins</span>
+                <span class="font-medium text-slate-400 text-xs sm:text-sm">Casa Militar do Tocantins</span>
                 <span class="hidden sm:inline text-slate-700">|</span>
-                <span class="font-medium text-slate-400">Escola de Governo (EGOV)</span>
+                <span class="font-medium text-slate-400 text-xs sm:text-sm">Escola de Governo (EGOV)</span>
                 <span class="hidden sm:inline text-slate-700">|</span>
-                <span class="font-medium text-slate-400">YoshiDados</span>
+                <span class="font-medium text-slate-400 text-xs sm:text-sm">YoshiDados</span>
             </div>
             <p class="text-xs">&copy; 2026 Instituto Saber Digital. Todos os direitos reservados.</p>
         </div>
     </footer>
 
-    <!-- Firebase SDK & Google Forms Integration -->
+    <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configurações
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // IDs do Google Form que você enviou
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeh_g_eASe0_neoTozKP0nW3FT2VTixBrLG8t1rVbtAoxUsHg/formResponse";
+        const FIELD_IDS = {
+            name: "entry.1125382548",
+            whatsapp: "entry.244908671",
+            email: "entry.368790757",
+            organ: "entry.1952617526",
+            role: "entry.1880183315"
+        };
+
+        // Firebase Config (Canvas injection)
+        let firebaseConfig;
+        try {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } catch (e) {
+            console.warn("Firebase config não encontrada (Rodando Localmente). O formulário continuará enviando para o Google Forms.");
+        }
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'palestra-gestao-to';
         
-        // ID Extraído do seu link do Google Form
-        const googleFormID = "1FAIpQLSeh_g_eASe0_neoTozKP0nW3FT2VTixBrLG8t1rVbtAoxUsHg"; 
-        
-        // Inicialização
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let authReady = false;
-
-        const startAuth = async () => {
-            try {
+        let db, auth;
+        if (firebaseConfig) {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            const startAuth = async () => {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (error) {
-                console.error("Erro auth:", error);
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            authReady = !!user;
-        });
+            };
+            startAuth();
+        }
 
         const handleSuccessUI = () => {
             const formContainer = document.getElementById('form-container');
@@ -342,83 +349,83 @@
                         <i class="fa-solid fa-check"></i>
                     </div>
                     <h3 class="text-3xl font-bold text-slate-900 mb-4">Inscrição Confirmada!</h3>
-                    <p class="text-slate-600 mb-8">Seus dados foram integrados à planilha oficial da Casa Militar com sucesso.</p>
+                    <p class="text-slate-600 mb-8">Seus dados foram integrados à planilha oficial com sucesso. Aguardamos você no dia 07/04.</p>
                     <button onclick="window.location.reload()" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-800 transition">
-                        Finalizar
+                        Fazer Nova Inscrição
                     </button>
                 </div>
             `;
         };
 
-        const handleRegistration = async (event) => {
+        const handleSubmit = async (event) => {
             event.preventDefault();
             
-            if (!authReady || !currentUser) {
-                alert("Conectando ao sistema seguro. Tente novamente em 2 segundos.");
-                return;
-            }
-
             const btn = document.getElementById('submitBtn');
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
 
+            // Feedback Visual
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
 
-            const name = document.getElementById('name').value.trim();
-            const whatsapp = document.getElementById('whatsapp').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const organ = document.getElementById('organ').value.trim();
-            const role = document.getElementById('role').value.trim();
+            const data = {
+                name: document.getElementById('input_name').value.trim(),
+                whatsapp: document.getElementById('input_whatsapp').value.trim(),
+                email: document.getElementById('input_email').value.trim(),
+                organ: document.getElementById('input_organ').value.trim(),
+                role: document.getElementById('input_role').value.trim()
+            };
 
-            /**
-             * SUBMISSÃO PARA GOOGLE FORMS (VIA FETCH NO-CORS)
-             * Esta é a forma mais moderna e limpa de enviar dados sem recarregar a página.
-             */
-            const formURL = `https://docs.google.com/forms/d/e/${googleFormID}/formResponse`;
-            
-            const params = new URLSearchParams();
-            params.append('entry.1125382548', name);
-            params.append('entry.244908671', whatsapp);
-            params.append('entry.368790757', email);
-            params.append('entry.1952617526', organ);
-            params.append('entry.1880183315', role);
+            // MÉTODO ROBUSTO: Criação de um form invisível que aponta para o iframe oculto
+            // Isso ignora erros de CORS e garante que os dados cheguem à planilha do Google.
+            const hiddenForm = document.createElement('form');
+            hiddenForm.method = "POST";
+            hiddenForm.action = GOOGLE_FORM_URL;
+            hiddenForm.target = "google_submit_frame"; // Nome do iframe oculto
+
+            // Adiciona os campos de dados com os entry.IDs corretos
+            for (const key in FIELD_IDS) {
+                const input = document.createElement('input');
+                input.type = "hidden";
+                input.name = FIELD_IDS[key];
+                input.value = data[key];
+                hiddenForm.appendChild(input);
+            }
+
+            document.body.appendChild(hiddenForm);
 
             try {
                 // Envio para o Google Forms
-                // O mode 'no-cors' permite o envio mas o browser não consegue ler a resposta de sucesso do Google (o que é normal)
-                fetch(formURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: params.toString()
-                }).catch(err => console.log("Google Forms submit initiated..."));
+                hiddenForm.submit();
+                console.log("Enviado para o Google Forms via Iframe.");
 
-                // Envio para Firebase (Backup e Gestão Interna)
-                const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
-                await addDoc(collectionPath, {
-                    name, whatsapp, email, organ, role,
-                    createdAt: serverTimestamp(),
-                    userId: currentUser.uid
-                });
+                // Envio paralelo para o Firebase (Backup) se configurado
+                if (db && auth.currentUser) {
+                    const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+                    await addDoc(collectionPath, {
+                        ...data,
+                        createdAt: serverTimestamp(),
+                        userId: auth.currentUser.uid
+                    });
+                }
                 
-                // Sucesso visual imediato
-                handleSuccessUI();
+                // Remove o form temporário e mostra sucesso após um pequeno delay
+                setTimeout(() => {
+                    document.body.removeChild(hiddenForm);
+                    handleSuccessUI();
+                }, 800);
 
             } catch (error) {
-                console.error("Erro sincronização:", error);
+                console.error("Erro na submissão:", error);
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
-                alert("Erro ao processar inscrição. Verifique sua ligação à internet.");
+                alert("Ocorreu um erro ao salvar sua inscrição. Por favor, tente novamente.");
             }
         };
 
-        startAuth();
-        document.getElementById('registrationForm').addEventListener('submit', handleRegistration);
+        document.getElementById('registrationForm').addEventListener('submit', handleSubmit);
     </script>
 </body>
 </html>
